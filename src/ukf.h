@@ -5,11 +5,11 @@
 #include "measurement_package.h"
 
 class UKF {
- public:
+public:
   /**
    * Constructor
    */
-  UKF();
+  UKF(const int n = 5);
 
   /**
    * Destructor
@@ -22,12 +22,43 @@ class UKF {
    */
   void ProcessMeasurement(MeasurementPackage meas_package);
 
+  void SetUseRadar(bool use_radar) {
+    use_radar_ = use_radar;
+  }
+
+  void SetUseLaser(bool use_laser) {
+    use_laser_ = use_laser;
+  }
+
+// protected:
+  /**
+   * Initial measurements.
+   * @param meas_package
+   */
+  void Init(const MeasurementPackage &meas_package);
+
   /**
    * Prediction Predicts sigma points, the state, and the state covariance
    * matrix
    * @param delta_t Time between k and k+1 in s
    */
   void Prediction(double delta_t);
+
+  /**
+   * @param Xsig_aug  
+   */
+  void ComputeAugmentedSigmaPoints(Eigen::MatrixXd &Xsig_aug);
+
+  /**
+   * @param Xsig_aug 
+   * @param dt 
+   */
+  void PredictSigmaPoints(Eigen::MatrixXd &Xsig_aug, double dt);
+
+  /**
+   *   
+   */
+  void PredictSigmaMeanCovariance();
 
   /**
    * Updates the state and the state covariance matrix using a laser measurement
@@ -95,6 +126,12 @@ class UKF {
 
   // Sigma point spreading parameter
   double lambda_;
+
+  bool initialized_;
+
+  Eigen::MatrixXd h_laser_;
+
+  Eigen::MatrixXd r_laser_;
 };
 
 #endif  // UKF_H

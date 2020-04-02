@@ -14,8 +14,8 @@ lambda_(3 - n),    // Sigma point spreading parameter
 is_initialized_(false),
 use_laser_(true),  // ignore laser measurements - except during init
 use_radar_(true),  // ignore radar measurements - except during init
-std_a_(30),        // Process noise standard deviation longitudinal acceleration in m/s^2
-std_yawdd_(30),    // Process noise standard deviation yaw acceleration in rad/s^2
+std_a_(1),        // Process noise standard deviation longitudinal acceleration in m/s^2 (orig 30)
+std_yawdd_(1),    // Process noise standard deviation yaw acceleration in rad/s^2 (orig 30)
 std_laspx_(0.15),  // Don't Modify:  Laser measurement noise standard deviation position1 in m
 std_laspy_(0.15),  // Don't Modify:  Laser measurement noise standard deviation position2 in m
 std_radr_(0.3),    // Don't Modify:  Radar measurement noise standard deviation radius in m
@@ -100,7 +100,7 @@ void UKF::Init(const MeasurementPackage &meas_package) {
 }
 
 void UKF::Prediction(double delta_t) {
-  MatrixXd Xsig_aug = MatrixXd(2*n_aug_ + 1, n_aug_);
+  MatrixXd Xsig_aug = MatrixXd(n_aug_, 2*n_aug_ + 1);
   ComputeAugmentedSigmaPoints(Xsig_aug);
   PredictSigmaPoints(Xsig_aug, delta_t);
   PredictSigmaMeanCovariance();
@@ -114,6 +114,7 @@ void UKF::ComputeAugmentedSigmaPoints(MatrixXd &Xsig_aug) {
     x_aug(i) = 0;
   }
 
+  // build augmented covariance matrix [P, 0; 0, Q]
   MatrixXd P_aug = MatrixXd::Zero(n_aug_, n_aug_);
   P_aug.topLeftCorner(n_x_, n_x_) = P_;
   P_aug(n_x_, n_x_) = std_a_*std_a_;
@@ -213,18 +214,23 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
    * covariance, P_.
    * You can also calculate the lidar NIS, if desired.
    */
-  // Project Measurements
 
+  // Measurement Model
+  VectorXd y = meas_package.raw_measurements_ - h_laser_*x_;
+
+  MatrixXd S = h_laser_*P_*(h_laser_.transpose()) + r_laser_;
+  MatrixXd S_inv = S.inverse();
+  
+  MatrixXd K = P_*(h_laser_.transpose())*S_inv;
+
+  x_ += K*y;
+
+  MatrixXd Ident = MatrixXd::Identity(n_x_, n_x_);
+
+  P_ = (Ident - K*h_laser_)*P_; 
 }
 
 void UKF::UpdateRadar(MeasurementPackage meas_package) {
-  /**
-   * TODO: Complete this function! Use radar data to update the belief 
-   * about the object's position. Modify the state vector, x_, and 
-   * covariance, P_.
-   * You can also calculate the radar NIS, if desired.
-   */
-
   // set measurement dimension, radar can measure r, phi, and r_dot
   int n_z = 3;
   // create matrix for sigma points in measurement space

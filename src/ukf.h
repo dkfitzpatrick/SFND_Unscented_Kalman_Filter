@@ -132,6 +132,14 @@ public:
   Eigen::MatrixXd h_laser_;
 
   Eigen::MatrixXd r_laser_;
+
+  int laser_update_cnt_;
+
+  int radar_update_cnt_;
+
+  int laser_05err_cnt_;
+
+  int radar_05err_cnt_;
 };
 
 #endif  // UKF_H

@@ -1,5 +1,7 @@
 #include "ukf.h"
 #include "Eigen/Dense"
+#include <iostream>
+#include <iomanip>
 
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
@@ -27,7 +29,11 @@ P_(n, n),          // initial covariance matrix
 Xsig_pred_(n, 2*(n + 2) + 1),
 weights_(2*(n + 2) + 1),
 h_laser_(2, n),
-r_laser_(2, 2)
+r_laser_(2, 2),
+laser_update_cnt_(0),
+radar_update_cnt_(0),
+laser_05err_cnt_(0),
+radar_05err_cnt_(0)
 {
   /**
    * Hint: one or more values initialized above might be wildly off...
@@ -228,6 +234,13 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
   MatrixXd Ident = MatrixXd::Identity(n_x_, n_x_);
 
   P_ = (Ident - K*h_laser_)*P_; 
+
+  laser_update_cnt_++;
+  // lidar - 2 DOF chi-squared(0.95) = 5.991
+  if ((y.transpose())*S_inv*y > 5.991) {
+    laser_05err_cnt_++;
+  }  
+  std::cout << "Laser NIS 5% Error Rate: " << std::setprecision(2) << laser_05err_cnt_/laser_update_cnt_ << "%" << std::endl;
 }
 
 void UKF::UpdateRadar(MeasurementPackage meas_package) {
@@ -261,7 +274,7 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
   for (int i = 0; i < 2*n_aug_ + 1; ++i) {
     z_pred += weights_(i)*Zsig.col(i);
   }
-//   z_pred = weights_*Zsig;
+  //   z_pred = weights_*Zsig;
 
   // innovation covariance matrix S
   for (int i = 0; i < 2*n_aug_ + 1; ++i) {  // 2n+1 simga points
@@ -305,8 +318,10 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
     Tc += weights_(i)*x_diff*z_diff.transpose();
   }
 
+  MatrixXd S_inv = S.inverse();
+
   // Kalman gain K;
-  MatrixXd K = Tc*S.inverse();
+  MatrixXd K = Tc*S_inv;
 
   // residual
   VectorXd z = meas_package.raw_measurements_;
@@ -319,4 +334,13 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
   // update state mean and covariance matrix
   x_ = x_ + K*z_diff;
   P_ = P_ - K*S*(K.transpose());
+
+  radar_update_cnt_++;
+  // radar - 3 DOF chi-squared(0.95) = 7.815
+  if ((z_diff.transpose())*S_inv*z_diff > 0.7815) {
+    radar_05err_cnt_++;
+  }
+
+  std::cout << "Radar NIS 5% Error Rate: " << std::setprecision(2) << radar_05err_cnt_/radar_update_cnt_ << "%" << std::endl;
+
 }

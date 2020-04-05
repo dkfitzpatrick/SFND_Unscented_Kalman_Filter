@@ -47,7 +47,7 @@ public:
   /**
    * @param Xsig_aug  
    */
-  void ComputeAugmentedSigmaPoints(Eigen::MatrixXd &Xsig_aug);
+  void ComputeSigmaPoints(Eigen::MatrixXd &Xsig_aug);
 
   /**
    * @param Xsig_aug 
@@ -129,17 +129,17 @@ public:
 
   bool initialized_;
 
-  Eigen::MatrixXd h_laser_;
+  Eigen::MatrixXd R_radar_;
 
-  Eigen::MatrixXd r_laser_;
+  Eigen::MatrixXd R_laser_;
 
-  int laser_update_cnt_;
+  bool first_laser_;
 
-  int radar_update_cnt_;
+  bool first_radar_;
 
-  int laser_05err_cnt_;
+  double laser_nis_ma05_;
 
-  int radar_05err_cnt_;
+  double radar_nis_ma05_;
 };
 
 #endif  // UKF_H

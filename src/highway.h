@@ -178,13 +178,13 @@ public:
 		{
 			viewer->addText("RMSE Failed Threshold", 30, 150, 20, 1, 0, 0, "rmse_fail");
 			if(rmseFailLog[0] > 0)
-				viewer->addText(" X: "+std::to_string(rmseFailLog[0]), 30, 125, 20, 1, 0, 0, "rmse_fail_x");
+				viewer->addText(" X: "+std::to_string(rmseFailLog[0]) + " @ " + std::to_string(float(timestamp)/1.0e6), 30, 125, 20, 1, 0, 0, "rmse_fail_x");
 			if(rmseFailLog[1] > 0)
-				viewer->addText(" Y: "+std::to_string(rmseFailLog[1]), 30, 100, 20, 1, 0, 0, "rmse_fail_y");
+				viewer->addText(" Y: "+std::to_string(rmseFailLog[1]) + " @ " + std::to_string(float(timestamp)/1.0e6), 30, 100, 20, 1, 0, 0, "rmse_fail_y");
 			if(rmseFailLog[2] > 0)
-				viewer->addText("Vx: "+std::to_string(rmseFailLog[2]), 30, 75, 20, 1, 0, 0, "rmse_fail_vx");
+				viewer->addText("Vx: "+std::to_string(rmseFailLog[2]) + " @ " + std::to_string(float(timestamp)/1.0e6), 30, 75, 20, 1, 0, 0, "rmse_fail_vx");
 			if(rmseFailLog[3] > 0)
-				viewer->addText("Vy: "+std::to_string(rmseFailLog[3]), 30, 50, 20, 1, 0, 0, "rmse_fail_vy");
+				viewer->addText("Vy: "+std::to_string(rmseFailLog[3]) + " @ " + std::to_string(float(timestamp)/1.0e6), 30, 50, 20, 1, 0, 0, "rmse_fail_vy");
 		}
 		
 	}
